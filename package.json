@@ -1,0 +1,28 @@
+{
+  "name": "convenio-server",
+  "version": "0.1.0",
+  "description": "GraphQL/Socket-driven API for the UHS JCL State Convention",
+  "main": "index.ts",
+  "repository": "git@github.com:uhsjcl/convenio-server.git",
+  "author": "",
+  "license": "",
+  "private": true,
+  "scripts": {
+    "build": "gulp",
+    "dev": "gulp watch"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.4.5",
+    "@babel/preset-env": "^7.4.5",
+    "dotenv": "^8.0.0",
+    "gulp": "^4.0.2",
+    "gulp-babel": "^8.0.0",
+    "gulp-typescript": "^5.0.1",
+    "merge2": "^1.2.3",
+    "typescript": "^3.5.1"
+  },
+  "dependencies": {
+    "graphql-yoga": "^1.17.4",
+    "socket.io": "^2.2.0"
+  }
+}
