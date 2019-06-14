@@ -1,7 +1,8 @@
 {
   "compilerOptions": {
+    "lib": ["es2016", "esnext.asynciterable"],
     "target": "es6",
-    "module": "es6",
+    "module": "commonjs",
     "moduleResolution": "node",
     "experimentalDecorators": true,
     "noImplicitAny": true
