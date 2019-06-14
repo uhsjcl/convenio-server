@@ -13,6 +13,9 @@ logs
 results
 tmp
 
+# Prisma
+prisma/generated
+
 # Coverage reports
 coverage
 
