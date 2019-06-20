@@ -1,0 +1,9 @@
+# User account related types
+
+type User {
+  id: ID! @id
+  email: String! @unique
+  password: String!
+  firstName: String!
+  lastName: String!
+}
