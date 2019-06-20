@@ -6,6 +6,12 @@
   - [User API](#User-API)
     - [Create user](#Create-user)
     - [Get user](#Get-user)
+    - [Update user](#Update-user)
+  - [Post (Announcements) API](#Post-Announcements-API)
+    - [Create post](#Create-post)
+    - [Publish post](#Publish-post)
+    - [Update post](#Update-post)
+    - [Initi](#Initi)
 
 ## Usage
 
@@ -55,13 +61,15 @@ Documentation code snippets are written in:
 
   **Required:**
 
-    `email: String` - must be valid email string
-
     `password: String`
 
     `firstName: String`
 
     `lastName: String`
+
+  **Optional:**
+
+    `email: String` - must be valid email string, required if you intend the account to be used by convention organizers
 
 - **Data Parameters**
 - **Expected Response**
@@ -160,11 +168,43 @@ Documentation code snippets are written in:
 
 - **Notes**
 
-  All user data must be sent over `HTTPS` for security.
+  - All user data must be sent over `HTTPS` for security.
+  - User accounts are intended only for convention admins/organizers. All other accounts should be pre-created 
 
 ### Get user
 
-> Fetch user account information from server
+> Fetch first matching user account information from server
+
+- **URL**
+
+  `/api/user/:id`
+
+  `/api/user/get` - (POST, requires body)
+
+- **Method**
+
+  `GET`
+
+  `POST`
+
+- **URL Parameters**
+
+  `:id` - the ID of the user account to query (required)
+
+- **Data Parameters**
+
+  **Required (only one):**
+
+    `id`
+
+    `email`
+
+- **Error and Expected Response**
+- **Sample Call**
+
+### Update user
+
+> Update user account information given email or ID
 
 - **URL**
 - **Method**
@@ -172,3 +212,13 @@ Documentation code snippets are written in:
 - **Data Parameters**
 - **Error and Expected Response**
 - **Sample Call**
+
+## Post (Announcements) API
+
+### Create post
+
+### Publish post
+
+### Update post
+
+### Initi
