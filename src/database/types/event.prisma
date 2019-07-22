@@ -1,0 +1,12 @@
+# Types for message board posts (announcments, etc.)
+
+type Event {
+  id: ID! @id
+  title: String!
+  date: DateTime!
+  location: String!
+  body: [String]!
+  open: Boolean! @default(value: false)
+  published: Boolean! @default(value: false)
+  members: [User!]!
+}
