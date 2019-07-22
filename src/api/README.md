@@ -8,10 +8,14 @@
     - [Get user](#Get-user)
     - [Update user](#Update-user)
   - [Post (Announcements) API](#Post-Announcements-API)
+    - [Get post](#Get-post)
     - [Create post](#Create-post)
     - [Publish post](#Publish-post)
-    - [Update post](#Update-post)
-    - [Initi](#Initi)
+    - [Update (edit) post](#Update-edit-post)
+  - [Event (Scheduling) API](#Event-Scheduling-API)
+    - [Get event](#Get-event)
+    - [Create event](#Create-event)
+    - [Update (edit) event](#Update-edit-event)
 
 ## Usage
 
@@ -215,10 +219,18 @@ Documentation code snippets are written in:
 
 ## Post (Announcements) API
 
+### Get post
+
 ### Create post
 
 ### Publish post
 
-### Update post
+### Update (edit) post
 
-### Initi
+## Event (Scheduling) API
+
+### Get event
+
+### Create event
+
+### Update (edit) event
