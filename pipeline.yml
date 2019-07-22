@@ -1,0 +1,40 @@
+resources:
+- name: convention-app-server
+  type: git
+  source:
+    branch: master
+    uri: https://github.com/uhsjcl/convenio-server.git
+
+jobs:
+- name: install dependencies
+  plan:
+    - get: convention-app-server
+      trigger: true
+    - get: dependency-cache
+- name: build
+  plan:
+    - get: convention-app-server
+    - task: 
+- name: test
+  public: true
+  plan:
+    - get: nodejs.org-git
+      trigger: true
+    - task: run-tests
+      config:
+        platform: linux
+        image_resource:
+          type: registry-image
+          source: { repository: node, tag: "10" }
+        inputs:
+          - name: nodejs.org-git
+        run:
+          path: /bin/sh
+          args:
+            - -c
+            - |
+              echo "Node Version: $(node --version)"
+              echo "NPM Version: $(npm --version)"
+              echo "yarn Version: $(yarn --version)"
+              cd nodejs.org-git
+              gulp test
