@@ -17,7 +17,14 @@ interface CreateEvent extends Request {
 
 interface GetEvent extends Request {
   body: {
-
+    id?: string;
+    title?: string;
+    date?: Date;
+    dateStartRange?: Date;
+    dateEndRange?: Date;
+    location?: string;
+    coords?: number;
+    max?: number;
   };
 }
 
@@ -33,23 +40,23 @@ interface GetEventMemberCount extends Request {
  * @param title
  * @param date
  */
-export const getOne = async (id?: string, title?: string, date?: Date) => {
-  if (!id && !title && !date) {
+export const getOne = async (id: string) => {
+  if (!id) {
     throw new InvalidBodyError('No ID, title, or date was specified.');
   }
   let event;
   // first try to query event by id
   if (id) event = prisma.event({ id });
-  else event = prisma.event({ title });
+  return event;
 };
 
 /**
  * Fetch all events that match query parameters
  * @param {String} title
- * @param {Date} dateStartRange
- * @param {Date} dateEndRange
+ * @param {Date} dateStartRange - the date begin range to include in the search (inclusive)
+ * @param {Date} dateEndRange   - the date end range to include in the search (inclusive)
  * @param {String} location
- * @param max (Default: 10)
+ * @param {Number=10} max
  */
 export const getMany = async (title?: string, dateStartRange?: Date, dateEndRange?: Date, location?: string, max: number = 10) => {
   if (!title && !dateStartRange && !dateEndRange && !location) {
@@ -69,7 +76,14 @@ export const getMany = async (title?: string, dateStartRange?: Date, dateEndRang
 };
 
 export const getEventHandler: AsyncHandler<GetEvent> = async (request, response) => {
-
+  if (request.body.id) {
+    const event = await getOne(request.body.id);
+    if (event) response.json(event).status(OK);
+  } else {
+    const { title, dateStartRange, dateEndRange, location, max } = request.body;
+    const event = await getMany(title, dateStartRange, dateEndRange, location, max);
+    if (event) response.json(event).status(OK);
+  }
 };
 
 /**
@@ -100,7 +114,7 @@ export const getMemberCountHandler: AsyncHandler<GetEventMemberCount> = async (r
  *
  * @return newly created event object
  */
-export const createEvent = async (title: string, date: Date, location: string, body: string, open: boolean = false, published: boolean = false) => {
+export const createEvent = async (title: string, date: Date, location: string, body: [string], open: boolean = false, published: boolean = false) => {
 
 };
 
