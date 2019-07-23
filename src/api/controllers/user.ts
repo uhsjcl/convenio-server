@@ -1,7 +1,7 @@
 import { prisma } from '../../../prisma/generated/prisma-client';
-import { InvalidEmailError, InvalidBodyError, FieldAlreadyExistsError, FieldNotFoundError } from '../../errors';
-import { Request, response } from 'express';
-import { AsyncHandler, respondWithError, logger } from '../../utils';
+import { InvalidBodyError, FieldAlreadyExistsError, FieldNotFoundError } from '../../errors';
+import { Request } from 'express';
+import { AsyncHandler, respondWithError } from '../../utils';
 import * as HttpStatus from 'http-status-codes';
 
 interface CreateUser extends Request {
@@ -43,6 +43,9 @@ export const getUser = async (id?: string, email?: string) => {
   }
 };
 
+/**
+ * POST and GET handler for retrieving user data
+ */
 export const getUserHandler: AsyncHandler<GetUser> = async (request, response) => {
   // Check if parsing request.param or by POST body
   if (request.path === '/get') {
@@ -109,6 +112,9 @@ export const createUser = async (password: string, firstName: string, lastName: 
   return user;
 };
 
+/**
+ * POST handler for creating a user
+ */
 export const createUserHandler: AsyncHandler<CreateUser> = async (request, response) => {
   try {
     const { password, firstName, lastName, email } = request.body;
