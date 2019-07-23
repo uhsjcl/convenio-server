@@ -9,7 +9,7 @@
   "private": true,
   "scripts": {
     "build": "gulp",
-    "prisma": "prisma deploy",
+    "prisma": "prisma deploy && prisma generate",
     "dev": "prisma reset && ts-node-dev --project tsconfig.json --no-notify --respawn --transpileOnly src",
     "watch": "gulp watch"
   },
