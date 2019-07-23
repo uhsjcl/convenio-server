@@ -2,11 +2,12 @@
 
 type Event {
   id: ID! @id
-  title: String!
-  date: DateTime!
-  location: String!
-  body: [String]!
-  open: Boolean! @default(value: false)
-  published: Boolean! @default(value: false)
-  members: [User!]!
+  title: String!                                    # display title of event
+  date: DateTime!                                   # datetime of event occurrence
+  location: String!                                 # location described as a string
+  coords: Int                                       # location code for the event
+  body: [String!] @scalarList(strategy: RELATION)   # array of strings for a description field
+  open: Boolean! @default(value: false)             # TRUE: the event does not require pre-registration
+  published: Boolean! @default(value: false)        # whether the event is available to the public
+  members: [User!]!                                 # list of user models signed up
 }
