@@ -10,6 +10,8 @@
   "scripts": {
     "build": "gulp",
     "prisma": "prisma deploy && prisma generate",
+    "docker:start": "docker-compose up -d",
+    "docker:stop": "docker-compose stop",
     "dev": "prisma reset && ts-node-dev --project tsconfig.json --no-notify --respawn --transpileOnly src",
     "watch": "gulp watch"
   },
