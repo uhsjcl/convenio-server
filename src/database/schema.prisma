@@ -1,0 +1,47 @@
+datasource postgres {
+  provider = "postgresql"
+  url      = "postgresql://prisma:prisma@localhost:5432/convenio"
+}
+
+/// User datatype for user accounts
+model User {
+  id          Int       @id
+  username    String    @unique                 // username for convention admin/moderator accounts
+  email       String    @unique                 // email address required for admin/moderator accounts
+  password    String                            // password to access account
+  firstName   String                            // first name
+  lastName    String                            // last name
+  role        Role
+  createdAt   DateTime  @default(now())
+}
+
+/// User role
+enum Role {
+  STUDENT
+  INSTRUCTOR
+  CONVENTION
+}
+
+/// Event datatype for events
+model Event {
+  id          Int       @id
+  title       String                                      // display title of event
+  date        DateTime                                    // datetime of event occurrence
+  location    String                                      // location described as a string
+  coords      Int                                         // location code for the event
+  body        String[]  @scalarList(strategy: RELATION)   // array of strings for a description field
+  open        Boolean   @default(false)                   // TRUE: the event does not require pre-registration
+  published   Boolean   @default(false)                   // whether the event is available to the public
+  members     User[]                                      // list of user models signed up
+}
+
+/// Post datatype for announcements
+model Post {
+  id          Int       @id
+  title       String                                      // announcement/post title
+  body        String[]  @scalarList(strategy: RELATION)   // body text of post
+  date        DateTime                                    // timestamp of announcement
+  published   Boolean   @default(false)                   // whether the article is published
+  publishDate DateTime                                    // DateTime to publish the announcement
+  author      User
+}

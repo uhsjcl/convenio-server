@@ -115,7 +115,7 @@ export const getMemberCountHandler: AsyncHandler<GetEventMemberCount> = async (r
  * @return newly created event object
  */
 export const createEvent = async (title: string, date: Date, location: string, body: [string], open: boolean = false, published: boolean = false) => {
-
+  
 };
 
 export const createEventHandler: AsyncHandler<CreateEvent> = async (request, response) => {
