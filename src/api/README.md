@@ -1,29 +1,28 @@
 # API Documentation
 
-- [API Documentation](#API-Documentation)
-  - [Usage](#Usage)
-    - [Common Error Responses](#Common-Error-Responses)
-  - [User API](#User-API)
-    - [Create user](#Create-user)
-    - [Get user](#Get-user)
-    - [Update user](#Update-user)
-  - [Post (Announcements) API](#Post-Announcements-API)
-    - [Get post](#Get-post)
-    - [Create post](#Create-post)
-    - [Publish post](#Publish-post)
-    - [Update (edit) post](#Update-edit-post)
-  - [Event (Scheduling) API](#Event-Scheduling-API)
-    - [Get event](#Get-event)
-    - [Create event](#Create-event)
-    - [Update (edit) event](#Update-edit-event)
+- [API Documentation](#api-documentation)
+  - [Usage](#usage)
+    - [Common Error Responses](#common-error-responses)
+  - [User API](#user-api)
+    - [Create user](#create-user)
+    - [Get user](#get-user)
+    - [Update user](#update-user)
+  - [Post (Announcements) API](#post-announcements-api)
+    - [Get post](#get-post)
+    - [Create post](#create-post)
+    - [Publish post](#publish-post)
+    - [Update (edit) post](#update-edit-post)
+  - [Event (Scheduling) API](#event-scheduling-api)
+    - [Get event](#get-event)
+    - [Create event](#create-event)
+    - [Update (edit) event](#update-edit-event)
+  - [Tournaments API](#tournaments-api)
 
 ## Usage
 
-[Insomnia](https://insomnia.rest) is a minimalistic REST client that allows for testing of server endpoints.
+[Insomnia](https://insomnia.rest) is a minimalistic REST client that allows for testing of server endpoints. [Download the official Insomnia environment]() here for immediate testing.
 
-[Download the official Insomnia environment]()
-
-Documentation code snippets are written in:
+The documentation includes code snippet examples to go with each endpoint. Examples are written in:
 
 - JavaScript (using `async fetch()`)
 - Java (using native `HTTPUrlConnection`)
@@ -31,6 +30,8 @@ Documentation code snippets are written in:
 - Swift (using `Alamofire`)
 
 ### Common Error Responses
+
+Requests to Convenio have several common outcomes. A successful REST request will always return a `2xx` code. Below are some common errors and how to diagnose them.
 
 - **Code:** `400 INTERNAL SERVER ERROR`
 - **Content:** varies
@@ -211,8 +212,21 @@ Documentation code snippets are written in:
 > Update user account information given email or ID
 
 - **URL**
+
+  `/api/user/update`
+
 - **Method**
+
+  `POST`
+
 - **URL Parameters**
+
+  `email` - the account's email
+  `oldPassword` - old password
+  `newPassword` - new password
+  `firstName`
+  `lastName`
+
 - **Data Parameters**
 - **Error and Expected Response**
 - **Sample Call**
@@ -234,3 +248,7 @@ Documentation code snippets are written in:
 ### Create event
 
 ### Update (edit) event
+
+## Tournaments API
+
+
