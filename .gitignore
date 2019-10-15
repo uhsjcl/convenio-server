@@ -38,5 +38,3 @@ Thumbs.db
 # Ignore built ts files
 dist/**/*
 build/**/*
-
-fix.sh
