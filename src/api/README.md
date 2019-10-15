@@ -18,7 +18,7 @@
     - [Get event](#get-event)
     - [Create event](#create-event)
     - [Update (edit) event](#update-edit-event)
-  - [Tournaments API](#tournaments-api)
+  - [Tournaments and Competitive Brackets API](#tournaments-and-competitive-brackets-api)
 
 ## Usage
 
@@ -354,14 +354,16 @@ The Convenio API makes available two endpoints for GET requests: one to the cont
 
 - **Data Parameters**
 
-  `title` - title of the post/announcement
+  `title` - title of the event
 
-  `author` - uuid of the author
+  `location` - room id
 
-  `body` - markdown or rich-HTML body
+  `open` - open enrollment
+
+  `capacity` - max number of participants (hard cap)
 
   `publish` - (true/false) whether or not to immediately publish the post upon creation.
 
 ### Update (edit) event
 
-## Tournaments API
+## Tournaments and Competitive Brackets API
