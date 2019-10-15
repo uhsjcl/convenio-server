@@ -3,6 +3,8 @@
 - [API Documentation](#api-documentation)
   - [Usage](#usage)
     - [Common Error Responses](#common-error-responses)
+    - [API Structure](#api-structure)
+    - [Authentication and Using No-Pass Mode](#authentication-and-using-no-pass-mode)
   - [User API](#user-api)
     - [Create user](#create-user)
     - [Get user](#get-user)
@@ -47,6 +49,14 @@ Requests to Convenio have several common outcomes. A successful REST request wil
 - **Content:** none
 
     > Please check that your fetch URL is valid and that your network settings are correct. Also, ensure that your staging server is operational or that your local server is operating on the correct port.
+
+### API Structure
+
+The Convenio API makes available two endpoints for GET requests: one to the controller followed by `/get` (POST) and one with `/:id` as a URL parameter. Queries to `/get` are POST requests and require a JSON body, and queries to `/:id` are GET requests and do not require any body parameters.
+
+### Authentication and Using No-Pass Mode
+
+
 
 ## User API
 
@@ -219,15 +229,18 @@ Requests to Convenio have several common outcomes. A successful REST request wil
 
   `POST`
 
-- **URL Parameters**
+- **Data Parameters**
 
   `email` - the account's email
+
   `oldPassword` - old password
+
   `newPassword` - new password
+
   `firstName`
+
   `lastName`
 
-- **Data Parameters**
 - **Error and Expected Response**
 - **Sample Call**
 
@@ -235,7 +248,57 @@ Requests to Convenio have several common outcomes. A successful REST request wil
 
 ### Get post
 
+> Query data associated with one specific post or many posts. Supports pagination.
+
+- **URL**
+
+  `/api/post/get`
+
+  `/api/post/:id`
+
+- **Method**
+
+  `POST`
+
+  `GET`
+
+- **URL Parameters**
+
+  `:id` - the ID associated with the post (retrieve only one)
+
+- **Data Parameters**
+
+  `uuid` - unique identifier (will retrieve only one)
+
+  **Optional Parameters** (to retrieve multiple):
+
+  `dateStart` - date greater than
+
+  `dateEnd` - date less than
+
+  `count` - number of posts to retrieve
+
 ### Create post
+
+> Create a markdown or rich-HTML flavored text post. Support for images not yet implemented.
+
+- **URL**
+
+  `/api/post/create`
+
+- **Method**
+
+  `POST`
+
+- **Data Parameters**
+
+  `title` - title of the post/announcement
+
+  `author` - uuid of the author
+
+  `body` - markdown or rich-HTML body
+
+  `publish` - (true/false) whether or not to immediately publish the post upon creation.
 
 ### Publish post
 
@@ -245,10 +308,60 @@ Requests to Convenio have several common outcomes. A successful REST request wil
 
 ### Get event
 
+> Query event data. Supports pagination.
+
+- **URL**
+
+  `/api/post/get`
+
+  `/api/post/:id`
+
+- **Method**
+
+  `POST`
+
+  `GET`
+
+- **URL Parameters**
+
+  `:id` - the ID associated with the event (retrieve only one)
+
+- **Data Parameters** (use when POSTing to `/get`)
+
+  `uuid` - unique identifier (will retrieve only one)
+
+  **Optional Parameters** (to retrieve multiple):
+
+  `location` - building code/room code of event
+
+  `dateStart` - date greater than
+
+  `dateEnd` - date less than
+
+  `count` - number of events to retrieve
+
 ### Create event
+
+> Create a markdown or rich-HTML flavored text post. Support for images not yet implemented.
+
+- **URL**
+
+  `/api/post/create`
+
+- **Method**
+
+  `POST`
+
+- **Data Parameters**
+
+  `title` - title of the post/announcement
+
+  `author` - uuid of the author
+
+  `body` - markdown or rich-HTML body
+
+  `publish` - (true/false) whether or not to immediately publish the post upon creation.
 
 ### Update (edit) event
 
 ## Tournaments API
-
-

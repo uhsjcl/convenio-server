@@ -28,7 +28,6 @@
     "@types/gulp-babel": "^6.1.29",
     "@types/merge2": "^1.1.4",
     "@types/socket.io": "^2.1.2",
-    "@types/winston": "^2.4.4",
     "gulp": "^4.0.2",
     "gulp-babel": "^8.0.0",
     "gulp-typescript": "^5.0.1",
