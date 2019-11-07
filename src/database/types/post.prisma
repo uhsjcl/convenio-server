@@ -1,0 +1,11 @@
+# Types for message board posts (announcments, etc.)
+
+type Post {
+  id: ID! @id
+  title: String!                                    # announcement/post title
+  body: [String!]! @scalarList(strategy: RELATION)  # body text of post
+  date: DateTime!                                   # timestamp of announcement
+  published: Boolean! @default(value: false)        # whether the article is published
+  publishDate: DateTime!                            # DateTime to publish the announcement
+  author: User @relation(link: INLINE)              # author user
+}
