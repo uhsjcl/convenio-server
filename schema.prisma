@@ -10,20 +10,38 @@ generator photon {
 /// User datatype for user accounts
 model User {
   id          Int       @id
-  username    String    @unique                 // username for convention admin/moderator accounts
-  email       String    @unique                 // email address required for admin/moderator accounts
-  password    String                            // password to access account
-  firstName   String                            // first name
-  lastName    String                            // last name
-  role        Role
+  username    String    @unique           // username for convention admin/moderator accounts
+  email       String    @unique           // email address required for admin/moderator accounts
+  password    String                      // password to access account
+  firstName   String                      // first name
+  lastName    String                      // last name
+  role        Role                        // permission level
+  school      School                      // user's school
+  grade       Int                         // user's grade level (if student)
+  level       String                      // latin level (i.e. HS-1, HS-2, HS-3, HS-4, etc.)
+  mealType    String                      // vegan, vegetarian, normal
   createdAt   DateTime  @default(now())
 }
 
 /// User role
+/// DELEGATE    JCL participant/student
+/// SPONSOR     school instructor/adult
+/// SCL         SCL member
+/// VOLUNTEER   adult or student volunteer such as an adult chaperone
+/// CONVENTION  convention planning member
 enum Role {
-  STUDENT
-  INSTRUCTOR
+  DELEGATE
+  SPONSOR
+  SCL
+  VOLUNTEER
   CONVENTION
+}
+
+model School {
+  id          Int       @id
+  name        String
+  delegates   User[]
+  points      Int
 }
 
 /// Event datatype for events
@@ -37,6 +55,30 @@ model Event {
   open        Boolean   @default(false)                   // TRUE: the event does not require pre-registration
   published   Boolean   @default(false)                   // whether the event is available to the public
   members     User[]                                      // list of user models signed up
+}
+
+/// Tournament league (event type i.e. sport, game)
+model Tournament {
+  id          Int       @id
+  title       String
+  event       Event
+}
+
+model Team {
+  id          Int       @id
+  teamName    String
+  schools     String[]  @scalarList(strategy: RELATION)
+  matches     Match[]
+}
+
+model Match {
+  id          Int       @id
+  date        DateTime
+  scoreA      Int
+  scoreB      Int
+  teamA       Team      
+  teamB       Team      
+  tournament  Tournament
 }
 
 /// Post datatype for announcements
