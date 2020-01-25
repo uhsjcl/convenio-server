@@ -14,7 +14,7 @@ results
 tmp
 
 # Prisma
-prisma/generated
+migrations/
 
 # Coverage reports
 coverage
