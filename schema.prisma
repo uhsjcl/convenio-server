@@ -51,7 +51,7 @@ model Event {
   date        DateTime                                    // datetime of event occurrence
   location    String                                      // location described as a string
   coords      Int                                         // location code for the event
-  body        String[]  @scalarList(strategy: RELATION)   // array of strings for a description field
+  body        String[]                                    // array of strings for a description field
   open        Boolean   @default(false)                   // TRUE: the event does not require pre-registration
   published   Boolean   @default(false)                   // whether the event is available to the public
   members     User[]                                      // list of user models signed up
@@ -67,7 +67,7 @@ model Tournament {
 model Team {
   id          Int       @id
   teamName    String
-  schools     String[]  @scalarList(strategy: RELATION)
+  schools     String[]
   matches     Match[]
 }
 
@@ -76,8 +76,7 @@ model Match {
   date        DateTime
   scoreA      Int
   scoreB      Int
-  teamA       Team      
-  teamB       Team      
+  teams       Team[]    
   tournament  Tournament
 }
 
@@ -85,7 +84,7 @@ model Match {
 model Post {
   id          Int       @id
   title       String                                      // announcement/post title
-  body        String[]  @scalarList(strategy: RELATION)   // body text of post
+  body        String[]                                    // body text of post
   date        DateTime                                    // timestamp of announcement
   published   Boolean   @default(false)                   // whether the article is published
   publishDate DateTime                                    // DateTime to publish the announcement
