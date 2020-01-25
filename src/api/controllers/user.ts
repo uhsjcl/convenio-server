@@ -1,8 +1,10 @@
-import { prisma } from '../../../prisma/generated/prisma-client';
+import { Photon } from '@generated/photon';
 import { InvalidBodyError, FieldAlreadyExistsError, FieldNotFoundError } from '../../errors';
 import { Request } from 'express';
 import { AsyncHandler, respondWithError } from '../../utils';
 import * as HttpStatus from 'http-status-codes';
+
+const prisma = new Photon();
 
 interface CreateUser extends Request {
   body: {
