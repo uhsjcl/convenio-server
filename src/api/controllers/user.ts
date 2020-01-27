@@ -1,7 +1,7 @@
 import { Photon } from '@generated/photon';
 import { InvalidBodyError, FieldAlreadyExistsError, FieldNotFoundError } from '../../errors';
 import { Request } from 'express';
-import { AsyncHandler, respondWithError } from '../../utils';
+import { AsyncHandler, respondWithError, logger } from '../../utils';
 import * as HttpStatus from 'http-status-codes';
 
 const prisma = new Photon();
@@ -25,19 +25,27 @@ interface GetUser extends Request {
   };
 }
 
+enum Role {
+  DELEGATE,
+  SPONSOR,
+  SCL,
+  VOLUNTEER,
+  CONVENTION
+}
+
 /**
  * Get user account
  * @param id 
  * @param email 
  */
-export const getUser = async (id?: string, email?: string) => {
+export const getUser = async (id?: number, email?: string) => {
   if (!id && !email) {
-    throw new InvalidBodyError('ID or Email was not specified.');
+    throw new InvalidBodyError('ID or Email was invalid or not specified.');
   }
   let user;
   // Try to find user by ID or email
-  if (id) user = prisma.user({ id });
-  else user = prisma.user({ email });
+  if (id) user = prisma.users.findOne({ where: { id } });
+  else user = prisma.users.findOne({ where: { email } });
   if (user) {
     return user;
   } else {
@@ -45,15 +53,23 @@ export const getUser = async (id?: string, email?: string) => {
   }
 };
 
+export const getAllUsers = async () => {
+  return prisma.users.findMany();
+};
+
 /**
  * POST and GET handler for retrieving user data
  */
 export const getUserHandler: AsyncHandler<GetUser> = async (request, response) => {
+  logger.info('here we are');
   // Check if parsing request.param or by POST body
   if (request.path === '/get') {
     try {
       const { id, email } = request.body;
-      const result = await getUser(id, email);
+      if (!id && !email) {
+        response.json(getAllUsers());
+      }
+      const result = await getUser(parseInt(id), email);
       if (result) {
         response.json(result);
       }
@@ -68,7 +84,8 @@ export const getUserHandler: AsyncHandler<GetUser> = async (request, response) =
     }
   } else {
     try {
-      const result = await getUser(request.params.id);
+      const result = await getUser(parseInt(request.params.id));
+      logger.info(result);
       if (result) {
         response.json(result);
       }
@@ -96,7 +113,8 @@ export const getUserHandler: AsyncHandler<GetUser> = async (request, response) =
  * 
  * @throws InvalidBodyError if a password, first name, or last name is not specified
  */
-export const createUser = async (password: string, firstName: string, lastName: string, email?: string) => {
+export const createUser = async (password: string, firstName: string, lastName: string, grade: number,
+  schoolName: string, level: string, mealType: string, role: ('DELEGATE' | 'SPONSOR' | 'SCL' | 'VOLUNTEER' | 'CONVENTION') = 'DELEGATE', email?: string) => {
   // validate body fields
   if (!password || !firstName || !lastName) {
     throw new InvalidBodyError('Password, first name, or last name was not specified.');
@@ -105,12 +123,25 @@ export const createUser = async (password: string, firstName: string, lastName: 
   // assume we create an account that belongs to a convention organizer
   if (email) {
     // Check if the user exists in database already
-    const user = await prisma.user({ email });
+    const user = await prisma.users.findOne({ where: { email } });
     if (user) {
-      throw new FieldAlreadyExistsError(`User already exists with email ${email}.`, user.id);
+      throw new FieldAlreadyExistsError(`User already exists with email ${email}.`, `${user.id}`);
     } 
   }
-  const user = await prisma.createUser({ email, password, firstName, lastName });
+  const school = await prisma.schools.findOne({ where: { name: schoolName } });
+  const user = await prisma.users.create({
+    data: {
+      email,
+      password,
+      firstName,
+      lastName,
+      role,
+      school,
+      grade,
+      level,
+      mealType
+    }
+  });
   return user;
 };
 
