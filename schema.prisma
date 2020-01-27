@@ -10,7 +10,6 @@ generator photon {
 /// User datatype for user accounts
 model User {
   id          Int       @id
-  username    String    @unique           // username for convention admin/moderator accounts
   email       String    @unique           // email address required for admin/moderator accounts
   password    String                      // password to access account
   firstName   String                      // first name
