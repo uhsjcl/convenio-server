@@ -19,17 +19,24 @@ type ErrorResponseHandler = (err: Error) => {
   id?: string;
 };
 
-/* 
- * This else if expression checks to see if the node_env property in .env is a developer mode
- * It is effectively equivalent to:
- * if (NODE_ENV === 'dev' || NODE_ENV === 'developer'... etc)
- * but checks many more variations of 'dev'
- * To append new variations of 'dev', simply add strings to the above sequence as if it is an array.
+/**
+ * Check if the server is set up in dev mode
  */
-export const isDevEnvironment = () => {
-  return ['dev', 'developer', 'development'].indexOf(process.env.NODE_ENV) >= 0;
+export const isDevMode = () => {
+  return process.env.DEVELOPMENT_MODE;
 };
 
+//////////////////////////////////////////////
+////////// MIDDLEWARES and HANDLERS //////////
+//////////////////////////////////////////////
+
+export const requestLogger: Handler = async (request, response) => {
+  logger.info(`Request received at ${request.path}`);
+};
+
+/**
+ * Handler to terminate all responses
+ */
 export const endResponse: Handler = (request, response) => {
   response.end();
 };
@@ -107,6 +114,7 @@ export const errorHandler: ErrorRequestHandler = async (error: Error | string, r
     ].join('\n'));
     response.status(HttpStatus.INTERNAL_SERVER_ERROR).end();
   }
+  next();
 };
 
 const loggerFormat = printf(({ level, message, timestamp }) => {
@@ -128,7 +136,7 @@ export const logger = createLogger({
       level: 'error'
     }),
     new transports.Console({
-      format: format.simple(),
+      format: loggerFormat,
       level: 'info'
     })
   ]
