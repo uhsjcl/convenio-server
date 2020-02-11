@@ -9,16 +9,17 @@ generator client {
 
 /// User datatype for user accounts
 model User {
-  id          Int       @id
-  email       String    @unique           // email address required for admin/moderator accounts
-  password    String                      // password to access account
-  firstName   String                      // first name
-  lastName    String                      // last name
-  role        Role                        // permission level
-  school      School                      // user's school
-  grade       Int                         // user's grade level (if student)
-  level       String                      // latin level (i.e. HS-1, HS-2, HS-3, HS-4, etc.)
-  mealType    String                      // vegan, vegetarian, normal
+  id          String    @id @default(cuid())
+  email       String    @unique               // email address required for admin/moderator accounts
+  password    String                          // password to access account
+  firstName   String                          // first name
+  lastName    String                          // last name
+  role        Role                            // permission level
+  school      School?                         // user's school
+  grade       Int?                            // user's grade level (if student)
+  level       String?                         // latin level (i.e. HS-1, HS-2, HS-3, HS-4, etc.)
+  mealType    String    @default("normal")    // vegan, vegetarian, normal
+  tickets     Int       @default(0)
   createdAt   DateTime  @default(now())
 }
 
@@ -37,15 +38,15 @@ enum Role {
 }
 
 model School {
-  id          Int       @id
-  name        String
-  delegates   User[]
-  points      Int
+  id          String    @id @default(cuid())
+  name        String    @unique
+  delegates   User[]    @relation(references: id)
+  points      Int       @default(0)
 }
 
 /// Event datatype for events
 model Event {
-  id          Int       @id
+  id          String    @id @default(cuid())
   title       String                                      // display title of event
   date        DateTime                                    // datetime of event occurrence
   location    String                                      // location described as a string
@@ -58,20 +59,20 @@ model Event {
 
 /// Tournament league (event type i.e. sport, game)
 model Tournament {
-  id          Int       @id
+  id          String      @id @default(cuid())
   title       String
-  event       Event
+  event       Event       @relation(references: id)
 }
 
 model Team {
-  id          Int       @id
+  id          String       @id @default(cuid())
   teamName    String
   schools     String[]
   matches     Match[]
 }
 
 model Match {
-  id          Int       @id
+  id          String       @id @default(cuid())
   date        DateTime
   scoreA      Int
   scoreB      Int
@@ -81,10 +82,10 @@ model Match {
 
 /// Post datatype for announcements
 model Post {
-  id          Int       @id
+  id          Int       @id @default(autoincrement())
   title       String                                      // announcement/post title
   body        String[]                                    // body text of post
-  date        DateTime                                    // timestamp of announcement
+  date        DateTime  @default(now())                   // timestamp of announcement
   published   Boolean   @default(false)                   // whether the article is published
   publishDate DateTime                                    // DateTime to publish the announcement
   author      User
