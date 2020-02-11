@@ -1,35 +1,33 @@
 import gulp from 'gulp';
-import babel from 'gulp-babel';
 import typescript from 'gulp-typescript';
-import merge from 'merge2';
+import merge from 'merge-stream';
+import del from 'del';
 
-const src = './src/**/*.ts';
-const out = './build';
-const babelConf = { presets: ['preset-env'] };                // use preset-env
-const project = typescript.createProject('tsconfig.json', {   // match tsconfig
-  outDir: out,
-  typescript: require('typescript')
+const dir = {
+  src: 'src',
+  build: 'build'
+};
+
+gulp.task('move_vars', () => {
+  try {
+    return gulp.src('.env')
+    .pipe(gulp.dest('build'));
+  } catch (e) {
+    console.error('Please fill out the environment variable file. Copy env stub file to .env and fill out the file.')
+    return;
+  }
 });
 
-gulp.task('build', () => {                              // build ts with definitions
-  var result = gulp.src(src).pipe(typescript(project));
+gulp.task('clean', () => del([ dir.build ]))
 
-  return merge([
-    result.dts.pipe(gulp.dest(`${out}/definitions`)),
-    result.js
-      .pipe(babel(babelConf))
-      .pipe(gulp.dest(`${out}/js`))
-  ]);
+gulp.task('server', () => {
+  let entry = gulp.src(`${dir.src}/index.ts`)
+    .pipe(typescript(require('./tsconfig.json').compilerOptions))
+	.pipe(gulp.dest(`${dir.build}/${dir.src}`));
+  let everything_else = gulp.src('./*(!(node_modules|tests))/**/*.ts')
+    .pipe(typescript(require('./tsconfig.json').compilerOptions))
+    .pipe(gulp.dest(`${dir.build}`));
+  return merge(entry, everything_else);
 });
 
-gulp.task('watch', ['build'], () => {                   // watch for changes
-  gulp.watch(src, ['build']);
-});
-
-gulp.task('configure', () => {                          // transfer dotenv variables to prod
-  return gulp.src('.env')
-    .pipe(gulp.dest('build/dist'));
-});
-
-gulp.task('default', ['build']);
-gulp.task('deploy', ['build', 'configure'])
+gulp.task('default', gulp.series('clean', 'server', 'move_vars'));

@@ -48,7 +48,7 @@ export const getOne = async (id: string) => {
   }
   let event;
   // first try to query event by id
-  if (id) event = prisma.event({ id });
+  if (id) event = prisma.event.findOne({ where: { id } });
   return event;
 };
 
@@ -65,12 +65,12 @@ export const getMany = async (title?: string, dateStartRange?: Date, dateEndRang
     throw new InvalidBodyError('No title, date range, or location was specified.');
   }
   let events;
-  events = prisma.events({
+  events = prisma.event.findMany({
     where: {
-      title_contains: title,
-      date_gte: dateStartRange,
+      title: title,
+      /* date_gte: dateStartRange,
       date_lte: dateEndRange,
-      location_contains: location
+      location_contains: location */
     }
   });
   if (events) return events;
@@ -96,7 +96,7 @@ export const getEventHandler: AsyncHandler<GetEvent> = async (request, response)
  */
 export const getMemberCount = async (id: string) => {
   if(!id) throw new InvalidBodyError('ID not specified.');
-  const memberCount = prisma.event({ id }).members.length;
+  const memberCount = prisma.event.findOne({ where: { id } }).members.length;
   return memberCount;
 };
 

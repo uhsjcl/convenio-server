@@ -35,7 +35,7 @@ interface GetUser extends Request {
  * @param id 
  * @param email 
  */
-export const getUser = async (id?: number, email?: string) => {
+export const getUser = async (id?: string, email?: string) => {
   if (!id && !email) {
     throw new InvalidBodyError('ID or Email was invalid or not specified.');
   }
@@ -66,7 +66,7 @@ export const getUserHandler: AsyncHandler<GetUser> = async (request, response) =
       if (!id && !email) {
         response.json(getAllUsers());
       }
-      const result = await getUser(parseInt(id), email);
+      const result = await getUser(id, email);
       if (result) {
         response.json(result);
       }
@@ -81,7 +81,7 @@ export const getUserHandler: AsyncHandler<GetUser> = async (request, response) =
     }
   } else {
     try {
-      const result = await getUser(parseInt(request.params.id));
+      const result = await getUser(request.params.id);
       logger.info(result);
       if (result) {
         response.json(result);

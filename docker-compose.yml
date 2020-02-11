@@ -1,5 +1,11 @@
 version: '3.7'
 services:
+  service:
+    container_name: convenio
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: convenio:latest
   postgres-db:
     container_name: postgresql
     image: postgres:12.1-alpine
