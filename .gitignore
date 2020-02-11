@@ -16,6 +16,9 @@ tmp
 # Prisma
 migrations/
 
+# Builds
+build/
+
 # Coverage reports
 coverage
 
