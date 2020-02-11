@@ -52,6 +52,7 @@ export const wrapTryCatch = (handler: AsyncHandler<Request>): AsyncHandler<Reque
     await handler(request, response, next);
   }
   catch (error) {
+    await logger.error(error);
     next(error);
   }
 };
@@ -61,6 +62,7 @@ export const wrapTryCatch = (handler: AsyncHandler<Request>): AsyncHandler<Reque
  * @param err the error to send back
  */
 export const respondWithError: ErrorResponseHandler = (err: Error) => {
+  if (isDevMode()) console.error(err);
   delete err.name;
   return {
     error: err.name,
@@ -138,6 +140,6 @@ export const logger = createLogger({
     new transports.Console({
       format: loggerFormat,
       level: 'info'
-    })
+    }),
   ]
 });
