@@ -3,8 +3,8 @@ datasource postgres {
   url      = "postgresql://prisma:prisma@localhost:5432/convenio"
 }
 
-generator photon {
-  provider = "photonjs" 
+generator client {
+  provider = "prisma-client-js" 
 }
 
 /// User datatype for user accounts

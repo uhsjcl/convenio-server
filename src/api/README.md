@@ -312,9 +312,9 @@ The Convenio API makes available two endpoints for GET requests: one to the cont
 
 - **URL**
 
-  `/api/post/get`
+  `/api/event/get`
 
-  `/api/post/:id`
+  `/api/event/:id`
 
 - **Method**
 
@@ -346,7 +346,7 @@ The Convenio API makes available two endpoints for GET requests: one to the cont
 
 - **URL**
 
-  `/api/post/create`
+  `/api/event/create`
 
 - **Method**
 

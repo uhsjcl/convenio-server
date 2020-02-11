@@ -1,10 +1,10 @@
-import { Photon } from '@generated/photon';
+import { PrismaClient } from '@prisma/client';
 import { FieldNotFoundError, InvalidBodyError } from '../../errors';
 import { Request } from 'express';
 import { AsyncHandler } from '../../utils';
 import { OK } from 'http-status-codes';
 
-const prisma = new Photon();
+const prisma = new PrismaClient();
 
 interface CreateEvent extends Request {
   body: {

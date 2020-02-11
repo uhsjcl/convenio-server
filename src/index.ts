@@ -1,4 +1,3 @@
-import { Photon } from '@generated/photon';
 import * as bodyParser from 'body-parser';
 import * as cookieParser from 'cookie-parser';
 import * as cluster from 'cluster';
@@ -13,8 +12,6 @@ import { logger, requestLogger } from './utils';
 import { router } from './api';
 
 import { endResponse, errorHandler, isDevMode } from './utils';
-
-const prisma = new Photon();
 
 const cpus = os.cpus().length;
 
