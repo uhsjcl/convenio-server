@@ -14,6 +14,6 @@ RUN yarn install
 
 RUN yarn build
 
-CMD ["yarn", "deploy"]
+CMD ["yarn", "serve"]
 
 EXPOSE 8080

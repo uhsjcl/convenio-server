@@ -30,8 +30,9 @@ export const isDevMode = () => {
 ////////// MIDDLEWARES and HANDLERS //////////
 //////////////////////////////////////////////
 
-export const requestLogger: Handler = async (request, response) => {
+export const requestLogger: Handler = async (request, response, next) => {
   logger.info(`Request received at ${request.path}`);
+  next();
 };
 
 /**

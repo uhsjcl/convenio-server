@@ -1,14 +1,16 @@
-version: '3.7'
+version: '3.8'
 services:
   service:
     container_name: convenio
+    ports:
+      - 8080:8080
     build:
       context: .
       dockerfile: Dockerfile
     image: convenio:latest
+
   postgres-db:
     container_name: postgresql
-    image: postgres:12.1-alpine
     restart: always
     ports:
       - '5432:5432'
