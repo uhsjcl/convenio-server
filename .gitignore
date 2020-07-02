@@ -15,6 +15,10 @@ tmp
 
 # Prisma
 prisma/generated
+migrations/
+
+# Builds
+build/
 
 # Coverage reports
 coverage

@@ -1,0 +1,92 @@
+datasource postgres {
+  provider = "postgresql"
+  url      = "postgresql://prisma:prisma@localhost:5432/convenio"
+}
+
+generator client {
+  provider = "prisma-client-js" 
+}
+
+/// User datatype for user accounts
+model User {
+  id          String    @id @default(cuid())
+  email       String    @unique               // email address required for admin/moderator accounts
+  password    String                          // password to access account
+  firstName   String                          // first name
+  lastName    String                          // last name
+  role        Role                            // permission level
+  school      School?                         // user's school
+  grade       Int?                            // user's grade level (if student)
+  level       String?                         // latin level (i.e. HS-1, HS-2, HS-3, HS-4, etc.)
+  mealType    String    @default("normal")    // vegan, vegetarian, normal
+  tickets     Int       @default(0)
+  createdAt   DateTime  @default(now())
+}
+
+/// User role
+/// DELEGATE    JCL participant/student
+/// SPONSOR     school instructor/adult
+/// SCL         SCL member
+/// VOLUNTEER   adult or student volunteer such as an adult chaperone
+/// CONVENTION  convention planning member
+enum Role {
+  DELEGATE
+  SPONSOR
+  SCL
+  VOLUNTEER
+  CONVENTION
+}
+
+model School {
+  id          String    @id @default(cuid())
+  name        String    @unique
+  delegates   User[]    @relation(references: id)
+  points      Int       @default(0)
+}
+
+/// Event datatype for events
+model Event {
+  id          String    @id @default(cuid())
+  title       String                                      // display title of event
+  date        DateTime                                    // datetime of event occurrence
+  location    String                                      // location described as a string
+  coords      Int                                         // location code for the event
+  body        String[]                                    // array of strings for a description field
+  open        Boolean   @default(false)                   // TRUE: the event does not require pre-registration
+  published   Boolean   @default(false)                   // whether the event is available to the public
+  members     User[]                                      // list of user models signed up
+}
+
+/// Tournament league (event type i.e. sport, game)
+model Tournament {
+  id          String      @id @default(cuid())
+  title       String
+  event       Event       @relation(references: id)
+}
+
+model Team {
+  id          String       @id @default(cuid())
+  teamName    String
+  schools     String[]
+  matches     Match[]
+}
+
+model Match {
+  id          String       @id @default(cuid())
+  date        DateTime
+  scoreA      Int
+  scoreB      Int
+  teams       Team[]    
+  tournament  Tournament
+}
+
+/// Post datatype for announcements
+model Post {
+  id          Int       @id @default(autoincrement())
+  title       String                                      // announcement/post title
+  body        String[]                                    // body text of post
+  date        DateTime  @default(now())                   // timestamp of announcement
+  published   Boolean   @default(false)                   // whether the article is published
+  publishDate DateTime                                    // DateTime to publish the announcement
+  author      User
+}

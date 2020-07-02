@@ -1,14 +1,21 @@
-import { prisma } from '../../../prisma/generated/prisma-client';
+import { PrismaClient } from '@prisma/client';
 import { InvalidBodyError, FieldAlreadyExistsError, FieldNotFoundError } from '../../errors';
 import { Request } from 'express';
-import { AsyncHandler, respondWithError } from '../../utils';
+import { AsyncHandler, respondWithError, logger } from '../../utils';
 import * as HttpStatus from 'http-status-codes';
+
+const prisma = new PrismaClient();
 
 interface CreateUser extends Request {
   body: {
     password: string;
     firstName: string;
     lastName: string;
+    grade?: number;
+    schoolName?: string;
+    level?: string;
+    mealType?: string;
+    role: 'DELEGATE' | 'SPONSOR' | 'SCL' | 'VOLUNTEER' | 'CONVENTION';
     email?: string;
   };
 }
@@ -30,12 +37,12 @@ interface GetUser extends Request {
  */
 export const getUser = async (id?: string, email?: string) => {
   if (!id && !email) {
-    throw new InvalidBodyError('ID or Email was not specified.');
+    throw new InvalidBodyError('ID or Email was invalid or not specified.');
   }
   let user;
   // Try to find user by ID or email
-  if (id) user = prisma.user({ id });
-  else user = prisma.user({ email });
+  if (id) user = prisma.user.findOne({ where: { id } });
+  else user = prisma.user.findOne({ where: { email } });
   if (user) {
     return user;
   } else {
@@ -43,14 +50,22 @@ export const getUser = async (id?: string, email?: string) => {
   }
 };
 
+export const getAllUsers = async () => {
+  return prisma.user.findMany();
+};
+
 /**
  * POST and GET handler for retrieving user data
  */
 export const getUserHandler: AsyncHandler<GetUser> = async (request, response) => {
+  logger.info('here we are');
   // Check if parsing request.param or by POST body
   if (request.path === '/get') {
     try {
       const { id, email } = request.body;
+      if (!id && !email) {
+        response.json(getAllUsers());
+      }
       const result = await getUser(id, email);
       if (result) {
         response.json(result);
@@ -67,6 +82,7 @@ export const getUserHandler: AsyncHandler<GetUser> = async (request, response) =
   } else {
     try {
       const result = await getUser(request.params.id);
+      logger.info(result);
       if (result) {
         response.json(result);
       }
@@ -94,7 +110,9 @@ export const getUserHandler: AsyncHandler<GetUser> = async (request, response) =
  * 
  * @throws InvalidBodyError if a password, first name, or last name is not specified
  */
-export const createUser = async (password: string, firstName: string, lastName: string, email?: string) => {
+export const createUser = async (password: string, firstName: string, lastName: string, grade?: number,
+  schoolName?: string, level?: string, mealType?: string, role: ('DELEGATE' | 'SPONSOR' | 'SCL' | 'VOLUNTEER' | 'CONVENTION') = 'DELEGATE', email?: string) => {
+  prisma.connect();
   // validate body fields
   if (!password || !firstName || !lastName) {
     throw new InvalidBodyError('Password, first name, or last name was not specified.');
@@ -103,12 +121,28 @@ export const createUser = async (password: string, firstName: string, lastName: 
   // assume we create an account that belongs to a convention organizer
   if (email) {
     // Check if the user exists in database already
-    const user = await prisma.user({ email });
+    const user = await prisma.user.findOne({ where: { email }, select: { id: true } });
     if (user) {
-      throw new FieldAlreadyExistsError(`User already exists with email ${email}.`, user.id);
-    } 
+      throw new FieldAlreadyExistsError(`User already exists with email ${email}.`, `${user.id}`);
+    }
   }
-  const user = await prisma.createUser({ email, password, firstName, lastName });
+  
+  const user = await prisma.user.create({
+    data: {
+      email,
+      password,
+      firstName,
+      lastName,
+      role,
+      school: {
+        create: { name: schoolName }
+      },
+      grade,
+      level,
+      mealType
+    }
+  });
+  prisma.disconnect();
   return user;
 };
 
@@ -117,10 +151,10 @@ export const createUser = async (password: string, firstName: string, lastName: 
  */
 export const createUserHandler: AsyncHandler<CreateUser> = async (request, response) => {
   try {
-    const { password, firstName, lastName, email } = request.body;
+    const { password, firstName, lastName, grade, schoolName, level, mealType, role, email } = request.body;
     // Spread operator unsupported for async/await iterables so we have to extrapolate each body element.
     // See https://github.com/tc39/proposal-async-iteration/issues/103
-    const result = await createUser(password, firstName, lastName, email);
+    const result = await createUser(password, firstName, lastName, grade, schoolName, level, mealType, role, email);
     if (result) {
       response.json(result);
     }

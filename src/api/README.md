@@ -1,29 +1,30 @@
 # API Documentation
 
-- [API Documentation](#API-Documentation)
-  - [Usage](#Usage)
-    - [Common Error Responses](#Common-Error-Responses)
-  - [User API](#User-API)
-    - [Create user](#Create-user)
-    - [Get user](#Get-user)
-    - [Update user](#Update-user)
-  - [Post (Announcements) API](#Post-Announcements-API)
-    - [Get post](#Get-post)
-    - [Create post](#Create-post)
-    - [Publish post](#Publish-post)
-    - [Update (edit) post](#Update-edit-post)
-  - [Event (Scheduling) API](#Event-Scheduling-API)
-    - [Get event](#Get-event)
-    - [Create event](#Create-event)
-    - [Update (edit) event](#Update-edit-event)
+- [API Documentation](#api-documentation)
+  - [Usage](#usage)
+    - [Common Error Responses](#common-error-responses)
+    - [API Structure](#api-structure)
+    - [Authentication and Using No-Pass Mode](#authentication-and-using-no-pass-mode)
+  - [User API](#user-api)
+    - [Create user](#create-user)
+    - [Get user](#get-user)
+    - [Update user](#update-user)
+  - [Post (Announcements) API](#post-announcements-api)
+    - [Get post](#get-post)
+    - [Create post](#create-post)
+    - [Publish post](#publish-post)
+    - [Update (edit) post](#update-edit-post)
+  - [Event (Scheduling) API](#event-scheduling-api)
+    - [Get event](#get-event)
+    - [Create event](#create-event)
+    - [Update (edit) event](#update-edit-event)
+  - [Tournaments and Competitive Brackets API](#tournaments-and-competitive-brackets-api)
 
 ## Usage
 
-[Insomnia](https://insomnia.rest) is a minimalistic REST client that allows for testing of server endpoints.
+[Insomnia](https://insomnia.rest) is a minimalistic REST client that allows for testing of server endpoints. [Download the official Insomnia environment]() here for immediate testing.
 
-[Download the official Insomnia environment]()
-
-Documentation code snippets are written in:
+The documentation includes code snippet examples to go with each endpoint. Examples are written in:
 
 - JavaScript (using `async fetch()`)
 - Java (using native `HTTPUrlConnection`)
@@ -31,6 +32,8 @@ Documentation code snippets are written in:
 - Swift (using `Alamofire`)
 
 ### Common Error Responses
+
+Requests to Convenio have several common outcomes. A successful REST request will always return a `2xx` code. Below are some common errors and how to diagnose them.
 
 - **Code:** `400 INTERNAL SERVER ERROR`
 - **Content:** varies
@@ -46,6 +49,14 @@ Documentation code snippets are written in:
 - **Content:** none
 
     > Please check that your fetch URL is valid and that your network settings are correct. Also, ensure that your staging server is operational or that your local server is operating on the correct port.
+
+### API Structure
+
+The Convenio API makes available two endpoints for GET requests: one to the controller followed by `/get` (POST) and one with `/:id` as a URL parameter. Queries to `/get` are POST requests and require a JSON body, and queries to `/:id` are GET requests and do not require any body parameters.
+
+### Authentication and Using No-Pass Mode
+
+
 
 ## User API
 
@@ -211,9 +222,25 @@ Documentation code snippets are written in:
 > Update user account information given email or ID
 
 - **URL**
+
+  `/api/user/update`
+
 - **Method**
-- **URL Parameters**
+
+  `POST`
+
 - **Data Parameters**
+
+  `email` - the account's email
+
+  `oldPassword` - old password
+
+  `newPassword` - new password
+
+  `firstName`
+
+  `lastName`
+
 - **Error and Expected Response**
 - **Sample Call**
 
@@ -221,7 +248,57 @@ Documentation code snippets are written in:
 
 ### Get post
 
+> Query data associated with one specific post or many posts. Supports pagination.
+
+- **URL**
+
+  `/api/post/get`
+
+  `/api/post/:id`
+
+- **Method**
+
+  `POST`
+
+  `GET`
+
+- **URL Parameters**
+
+  `:id` - the ID associated with the post (retrieve only one)
+
+- **Data Parameters**
+
+  `uuid` - unique identifier (will retrieve only one)
+
+  **Optional Parameters** (to retrieve multiple):
+
+  `dateStart` - date greater than
+
+  `dateEnd` - date less than
+
+  `count` - number of posts to retrieve
+
 ### Create post
+
+> Create a markdown or rich-HTML flavored text post. Support for images not yet implemented.
+
+- **URL**
+
+  `/api/post/create`
+
+- **Method**
+
+  `POST`
+
+- **Data Parameters**
+
+  `title` - title of the post/announcement
+
+  `author` - uuid of the author
+
+  `body` - markdown or rich-HTML body
+
+  `publish` - (true/false) whether or not to immediately publish the post upon creation.
 
 ### Publish post
 
@@ -231,6 +308,62 @@ Documentation code snippets are written in:
 
 ### Get event
 
+> Query event data. Supports pagination.
+
+- **URL**
+
+  `/api/event/get`
+
+  `/api/event/:id`
+
+- **Method**
+
+  `POST`
+
+  `GET`
+
+- **URL Parameters**
+
+  `:id` - the ID associated with the event (retrieve only one)
+
+- **Data Parameters** (use when POSTing to `/get`)
+
+  `uuid` - unique identifier (will retrieve only one)
+
+  **Optional Parameters** (to retrieve multiple):
+
+  `location` - building code/room code of event
+
+  `dateStart` - date greater than
+
+  `dateEnd` - date less than
+
+  `count` - number of events to retrieve
+
 ### Create event
 
+> Create a markdown or rich-HTML flavored text post. Support for images not yet implemented.
+
+- **URL**
+
+  `/api/event/create`
+
+- **Method**
+
+  `POST`
+
+- **Data Parameters**
+
+  `title` - title of the event
+
+  `location` - room id
+
+  `open` - open enrollment
+
+  `capacity` - max number of participants (hard cap)
+
+  `publish` - (true/false) whether or not to immediately publish the post upon creation.
+
 ### Update (edit) event
+
+## Tournaments and Competitive Brackets API

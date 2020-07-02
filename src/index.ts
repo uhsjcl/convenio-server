@@ -1,4 +1,3 @@
-import { prisma } from '../prisma/generated/prisma-client';
 import * as bodyParser from 'body-parser';
 import * as cookieParser from 'cookie-parser';
 import * as cluster from 'cluster';
@@ -8,11 +7,11 @@ import * as express from 'express';
 import * as os from 'os';
 import * as path from 'path';
 
-import { logger } from './utils';
+import { logger, requestLogger } from './utils';
 
 import { router } from './api';
 
-import { endResponse, errorHandler, isDevEnvironment } from './utils';
+import { endResponse, errorHandler, isDevMode } from './utils';
 
 const cpus = os.cpus().length;
 
@@ -34,7 +33,7 @@ const corsOptions = {
     if (origin === `https://www.${process.env.PUBLIC_URI}` || origin === `https://${process.env.PUBLIC_URI}`) {
       cb(null, true); // allow the request
     }
-    else if (isDevEnvironment()) {
+    else if (isDevMode()) {
       cb(null, true); // allow all origins in dev mode
     }
     else {
@@ -72,6 +71,8 @@ if (cluster.isMaster) {
   server.use(cookieParser(process.env.SESSION_SECRET));
   
   server.use('/api', router);
+
+  if(process.env.DEVELOPMENT_MODE) server.use(requestLogger);
   
   server.use(endResponse);
   
