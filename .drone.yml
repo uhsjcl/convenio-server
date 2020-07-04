@@ -1,0 +1,48 @@
+kind: pipeline
+type: kubernetes
+name: Build and test server
+
+platform:
+  os: linux
+  arch: amd64
+
+steps:
+  - name: install dependencies
+    image: node:lts
+    commands:
+      - yarn install
+
+  - name: build
+    image: node:lts
+    commands:
+      - cp .env.example .env
+      - yarn build
+  
+---
+kind: pipeline
+type: ssh
+name: Deploy to production
+
+server:
+  host:
+    from_secret: prod_host
+  user:
+    from_secret: prod_username
+  ssh_key:
+    from_secret: prod_key
+
+trigger:
+  branch:
+    - master
+
+clone:
+  disable: true
+
+steps:
+  - name: checkout and pull
+    commands:
+  - name: deploy
+    commands:
+      - docker-compose down
+      - docker-compose build server
+      - docker-compose up -d
