@@ -1,7 +1,7 @@
 {
   "name": "convenio-server",
-  "version": "0.1.0",
-  "description": "GraphQL/Socket-driven API for the UHS JCL State Convention",
+  "version": "0.4.0",
+  "description": "API for the convention app",
   "main": "index.ts",
   "repository": "git@github.com:uhsjcl/convenio-server.git",
   "author": "",
