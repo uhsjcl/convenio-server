@@ -28,7 +28,9 @@
     "docker:build-database": "docker-compose build postgres-db",
     "dev": "ts-node-dev --project tsconfig.json --no-notify --respawn --transpileOnly src",
     "watch": "gulp watch",
-    "prune-branches": "read -n 1 -s -r -p \"This command will remove all local branches not present on remote. Press any key to confirm.\n\"; git fetch -p && for branch in `git branch -vv | grep ': gone]' | awk '{print $1}'`; do git branch -D $branch; done"
+    "prune-branches": "read -n 1 -s -r -p \"This command will remove all local branches not present on remote. Press any key to confirm.\n\"; git fetch -p && for branch in `git branch -vv | grep ': gone]' | awk '{print $1}'`; do git branch -D $branch; done",
+    "lint": "eslint . --ext .ts",
+    "lint:fix": "eslint . --ext .ts --fix"
   },
   "devDependencies": {
     "@babel/core": "^7.8.7",
