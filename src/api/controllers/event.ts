@@ -48,7 +48,7 @@ export const getOne = async (id: string) => {
   }
   let event;
   // first try to query event by id
-  if (id) event = prisma.event.findOne({ where: { id } });
+  if (id) event = prisma.event.findUnique({ where: { id } });
   return event;
 };
 
@@ -96,7 +96,7 @@ export const getEventHandler: AsyncHandler<GetEvent> = async (request, response)
  */
 export const getMemberCount = async (id: string) => {
   if(!id) throw new InvalidBodyError('ID not specified.');
-  const memberCount = prisma.event.findOne({ where: { id } }).members.length;
+  const memberCount = prisma.event.findUnique({ where: { id } }).members.length;
   return memberCount;
 };
 
