@@ -1,23 +1,26 @@
 version: '3.8'
+
 services:
   service:
-    container_name: convenio
     ports:
       - 8080:8080
     build:
       context: .
       dockerfile: Dockerfile
     image: convenio:latest
-
-  postgres-db:
-    container_name: postgresql
-    restart: always
+    volumes:
+      - service-logs:/root/convenio-server/logs
+  postgres:
+    image: postgres:13-alpine
     ports:
       - '5432:5432'
     environment:
-      POSTGRES_USER: prisma
-      POSTGRES_PASSWORD: prisma
+      POSTGRES_USER: convenio
+      POSTGRES_PASSWORD: convenio
     volumes:
       - postgres:/var/lib/postgresql/data
+      - ./database/.:/docker-entrypoint-initdb.d
+
 volumes:
   postgres: ~
+  service-logs:

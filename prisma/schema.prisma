@@ -1,0 +1,112 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Event {
+  /// This field's default value can currently not be parsed: `uuid_generate_v4()`.
+  id               String      @id @default(dbgenerated())
+  name             String
+  description      String?
+  startTime        DateTime?
+  endTime          DateTime?
+  location         String?
+  openRegistration Boolean     @default(false)
+  published        Boolean     @default(false)
+  Tournament       Tournament?
+}
+
+model EventRegistration {
+  userId                               String
+  eventId                              String
+  subscribe                            Boolean @default(true)
+  User_EventRegistration_eventIdToUser User    @relation("EventRegistration_eventIdToUser", fields: [eventId], references: [id])
+  User_EventRegistration_userIdToUser  User    @relation("EventRegistration_userIdToUser", fields: [userId], references: [id])
+
+  @@id([userId, eventId])
+}
+
+model School {
+  id   String @id
+  name String
+}
+
+model Team {
+  /// This field's default value can currently not be parsed: `uuid_generate_v4()`.
+  id   String @id @default(dbgenerated())
+  name String @unique
+}
+
+model TeamMembership {
+  userId String
+  teamId String
+
+  @@id([userId, teamId])
+}
+
+model Tournament {
+  /// This field's default value can currently not be parsed: `uuid_generate_v4()`.
+  id                String              @id @default(dbgenerated())
+  name              String
+  eventId           String?             @unique
+  Event             Event?              @relation(fields: [eventId], references: [id])
+  TournamentEntrant TournamentEntrant[]
+}
+
+model TournamentEntry {
+  teamId       String
+  tournamentId String
+
+  @@id([teamId, tournamentId])
+}
+
+model User {
+  id                                                String              @id
+  email                                             String              @unique
+  password                                          String
+  phoneNumber                                       Int?                @unique
+  firstName                                         String
+  lastName                                          String
+  role                                              Role                @default(delegate)
+  school                                            String
+  grade                                             Int?
+  latinLevel                                        String?
+  Announcement                                      Announcement[]
+  EventRegistration_EventRegistration_eventIdToUser EventRegistration[] @relation("EventRegistration_eventIdToUser")
+  EventRegistration_EventRegistration_userIdToUser  EventRegistration[] @relation("EventRegistration_userIdToUser")
+  TournamentEntrant                                 TournamentEntrant[]
+}
+
+model Announcement {
+  /// This field's default value can currently not be parsed: `uuid_generate_v4()`.
+  id          String    @id @default(dbgenerated())
+  authorId    String?
+  title       String
+  body        String?
+  createdOn   DateTime  @default(now())
+  published   Boolean   @default(false)
+  publishDate DateTime?
+  User        User?     @relation(fields: [authorId], references: [id])
+}
+
+model TournamentEntrant {
+  teamId       String
+  tournamentId String
+  User         User       @relation(fields: [teamId], references: [id])
+  Tournament   Tournament @relation(fields: [tournamentId], references: [id])
+
+  @@id([teamId, tournamentId])
+}
+
+enum Role {
+  delegate
+  sponsor
+  scl
+  volunteer
+  convention
+  administrator
+}
