@@ -5,7 +5,6 @@ import * as cors from 'cors';
 import * as dotenv from 'dotenv';
 import * as express from 'express';
 import * as os from 'os';
-import * as path from 'path';
 
 import { logger, requestLogger } from './utils';
 
@@ -20,7 +19,9 @@ type CORSCallback = (error: any, allowed?: boolean) => void;
 /**
  * Load environment variables config from .env
  */
-dotenv.config({ path: path.resolve(__dirname, '../.env') });
+dotenv.config();
+
+const { LOG_ALL_REQUESTS } = process.env;
 
 /**
  * Options for Cross-Origin Resource Sharing (CORS).
@@ -50,12 +51,12 @@ if (cluster.isMaster) {
     cluster.fork();
   }
   cluster.on('online', worker => {
-      logger.info(`Worker online, process pid: ${worker.id}`);
+    // logger.info(`Worker online, process pid: ${worker.id}`);
   });
   // if worker dies, fork
   cluster.on('exit', (worker, code, signal) => {
-      logger.error(`Worker killed, process pid: ${worker.id} | signal: ${signal} | code: ${code}`);
-      cluster.fork();
+    logger.error(`Worker killed, process pid: ${worker.id} | signal: ${signal} | code: ${code}`);
+    cluster.fork();
   });
 } else {
   const server: express.Express = express();
@@ -69,14 +70,14 @@ if (cluster.isMaster) {
   
   // automatically parse cookies with the server secret
   server.use(cookieParser(process.env.SESSION_SECRET));
-  
-  server.use('/api', router);
 
-  if(process.env.DEVELOPMENT_MODE) server.use(requestLogger);
+  if (LOG_ALL_REQUESTS) server.use(requestLogger);
+
+  server.use('/api', router);
   
   server.use(endResponse);
   
   server.use(errorHandler);
-  
+
   server.listen(process.env.PORT, () => logger.info(`🚀 Worker started: ${cluster.worker.id} | Port ${process.env.PORT}`));
 }

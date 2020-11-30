@@ -9,41 +9,47 @@ datasource db {
 
 model Event {
   /// This field's default value can currently not be parsed: `uuid_generate_v4()`.
-  id               String      @id @default(dbgenerated())
-  name             String
-  description      String?
-  startTime        DateTime?
-  endTime          DateTime?
-  location         String?
-  openRegistration Boolean     @default(false)
-  published        Boolean     @default(false)
-  Tournament       Tournament?
+  id                String              @id @default(dbgenerated())
+  name              String
+  description       String?
+  startTime         DateTime?
+  endTime           DateTime?
+  location          String?
+  openRegistration  Boolean             @default(false)
+  published         Boolean             @default(false)
+  EventRegistration EventRegistration[]
+  Tournament        Tournament?
 }
 
 model EventRegistration {
-  userId                               String
-  eventId                              String
-  subscribe                            Boolean @default(true)
-  User_EventRegistration_eventIdToUser User    @relation("EventRegistration_eventIdToUser", fields: [eventId], references: [id])
-  User_EventRegistration_userIdToUser  User    @relation("EventRegistration_userIdToUser", fields: [userId], references: [id])
+  userId                              String
+  eventId                             String
+  subscribe                           Boolean @default(false)
+  Event                               Event   @relation(fields: [eventId], references: [id])
+  User_EventRegistration_userIdToUser User    @relation("EventRegistration_userIdToUser", fields: [userId], references: [id])
 
   @@id([userId, eventId])
 }
 
 model School {
-  id   String @id
-  name String
+  /// This field's default value can currently not be parsed: `uuid_generate_v4()`.
+  id   String @id @default(dbgenerated())
+  name String @unique
+  User User[]
 }
 
 model Team {
   /// This field's default value can currently not be parsed: `uuid_generate_v4()`.
-  id   String @id @default(dbgenerated())
-  name String @unique
+  id             String           @id @default(dbgenerated())
+  name           String           @unique
+  TeamMembership TeamMembership[]
 }
 
 model TeamMembership {
   userId String
   teamId String
+  Team   Team   @relation(fields: [teamId], references: [id])
+  User   User   @relation(fields: [userId], references: [id])
 
   @@id([userId, teamId])
 }
@@ -57,28 +63,23 @@ model Tournament {
   TournamentEntrant TournamentEntrant[]
 }
 
-model TournamentEntry {
-  teamId       String
-  tournamentId String
-
-  @@id([teamId, tournamentId])
-}
-
 model User {
-  id                                                String              @id
-  email                                             String              @unique
-  password                                          String
-  phoneNumber                                       Int?                @unique
-  firstName                                         String
-  lastName                                          String
-  role                                              Role                @default(delegate)
-  school                                            String
-  grade                                             Int?
-  latinLevel                                        String?
-  Announcement                                      Announcement[]
-  EventRegistration_EventRegistration_eventIdToUser EventRegistration[] @relation("EventRegistration_eventIdToUser")
-  EventRegistration_EventRegistration_userIdToUser  EventRegistration[] @relation("EventRegistration_userIdToUser")
-  TournamentEntrant                                 TournamentEntrant[]
+  /// This field's default value can currently not be parsed: `uuid_generate_v4()`.
+  id                                               String              @id @default(dbgenerated())
+  email                                            String              @unique
+  password                                         String
+  phoneNumber                                      Int?                @unique
+  firstName                                        String
+  lastName                                         String
+  role                                             Role                @default(delegate)
+  schoolId                                         String
+  grade                                            Int?
+  latinLevel                                       String?
+  School                                           School              @relation(fields: [schoolId], references: [id])
+  Announcement                                     Announcement[]
+  EventRegistration_EventRegistration_userIdToUser EventRegistration[] @relation("EventRegistration_userIdToUser")
+  TeamMembership                                   TeamMembership[]
+  TournamentEntrant                                TournamentEntrant[]
 }
 
 model Announcement {

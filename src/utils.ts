@@ -1,7 +1,10 @@
 import { Handler, ErrorRequestHandler, NextFunction, Request, Response } from 'express';
-import * as HttpStatus from 'http-status-codes';
+import HttpStatus from 'http-status-codes';
+import { config } from 'dotenv';
 import { createLogger, format, transports } from 'winston';
-const { combine, timestamp, printf, prettyPrint } = format;
+const { combine, printf } = format;
+
+config();
 
 /**
  * Async version of Express Request type
@@ -30,7 +33,7 @@ export const isDevMode = () => {
 ////////// MIDDLEWARES and HANDLERS //////////
 //////////////////////////////////////////////
 
-export const requestLogger: Handler = async (request, response, next) => {
+export const requestLogger: Handler = async (request, _, next) => {
   logger.info(`Request received at ${request.path}`);
   next();
 };
@@ -38,7 +41,7 @@ export const requestLogger: Handler = async (request, response, next) => {
 /**
  * Handler to terminate all responses
  */
-export const endResponse: Handler = (request, response) => {
+export const endResponse: Handler = (_, response) => {
   response.end();
 };
 
@@ -53,7 +56,7 @@ export const wrapTryCatch = (handler: AsyncHandler<Request>): AsyncHandler<Reque
     await handler(request, response, next);
   }
   catch (error) {
-    await logger.error(error);
+    logger.error(error);
     next(error);
   }
 };
@@ -124,23 +127,42 @@ const loggerFormat = printf(({ level, message, timestamp }) => {
   return `[${timestamp}] ${level}: ${message}`;
 });
 
+const loggerOptions = {
+  console: {
+    handleExceptions: true,
+    format: combine(
+      format.colorize(),
+      format.timestamp({
+        format: 'YYYY-MM-DD HH:mm:ss'
+      }),
+      loggerFormat
+    )
+  },
+  file: {
+    format: combine(
+      format.timestamp({
+        format: 'YYYY-MM-DD HH:mm:ss'
+      }),
+      loggerFormat
+    )
+  }
+};
+
 export const logger = createLogger({
   level: 'info',
-  format: combine(
-    format.colorize(),
-    format.timestamp({
-      format: 'YYYY-MM-DD HH:mm:ss'
-    }),
-    loggerFormat
-  ),
   transports: [
     new transports.File({
       filename: `logs/${formatDate(new Date())}-error.log`,
-      level: 'error'
+      level: 'error',
+      ...loggerOptions.file
+    }),
+    new transports.File({
+      filename: `logs/${formatDate(new Date())}.log`,
+      ...loggerOptions.file
     }),
     new transports.Console({
-      format: loggerFormat,
-      level: 'info'
+      level: 'info',
+      ...loggerOptions.console
     }),
   ]
 });

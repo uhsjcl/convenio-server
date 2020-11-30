@@ -1,13 +1,14 @@
-DROP TABLE IF EXISTS "School";
-DROP TABLE IF EXISTS "EventRegistration";
-DROP TABLE IF EXISTS "TournamentEntrant";
-DROP TABLE IF EXISTS "Announcement";
+/*DROP TABLE IF EXISTS "EventRegistration" CASCADE;
+DROP TABLE IF EXISTS "TournamentEntrant" CASCADE;
+DROP TABLE IF EXISTS "TeamMembership" CASCADE;
+DROP TABLE IF EXISTS "Announcement" CASCADE;
 DROP TABLE IF EXISTS "Team";
-DROP TABLE IF EXISTS "User";
+DROP TABLE IF EXISTS "User" CASCADE;
+DROP TABLE IF EXISTS "School";
 DROP TABLE IF EXISTS "Tournament";
 DROP TABLE IF EXISTS "Event";
 
-DROP TYPE IF EXISTS "Role";
+DROP TYPE IF EXISTS "Role";*/
 
 --create types
 DO $$
@@ -27,19 +28,19 @@ BEGIN
 END$$;
 
 CREATE TABLE IF NOT EXISTS public."School" (
-  "id"  UUID  PRIMARY KEY NOT NULL,
-  "name"  VARCHAR(255)  NOT NULL
+  "id"    UUID          PRIMARY KEY NOT NULL DEFAULT UUID_GENERATE_V4(),
+  "name"  VARCHAR(255)  UNIQUE NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS public."User" (
-  "id"          UUID          PRIMARY KEY NOT NULL,
+  "id"          UUID          PRIMARY KEY NOT NULL DEFAULT UUID_GENERATE_V4(),
   "email"       VARCHAR(255)  UNIQUE NOT NULL,
   "password"    VARCHAR(100)  NOT NULL,
   "phoneNumber" BIGINT        UNIQUE,
   "firstName"   VARCHAR(255)  NOT NULL,
   "lastName"    VARCHAR(255)  NOT NULL,
   "role"        "Role"        NOT NULL DEFAULT 'delegate',
-  "school"      VARCHAR(255)  NOT NULL,
+  "schoolId"    UUID          NOT NULL REFERENCES "School" ("id") ON UPDATE CASCADE,
   "grade"       SMALLINT,
   "latinLevel"  VARCHAR(7)
 );
@@ -55,12 +56,25 @@ CREATE TABLE IF NOT EXISTS public."Event" (
   "published"         BOOLEAN       NOT NULL DEFAULT FALSE
 );
 
--- Junction table for users signed up for events
+/* Junction table for users signed up for events
+ * Syntax for this is increasingly verbose and unintuitive because it has to conform to prisma standards
+ * see: https://www.prisma.io/docs/concepts/components/prisma-schema/relations#conventions-for-relation-tables-in-implicit-m-n-relations
+ * 
+ * We create the junction table "_EventRegistration" (which must start with an underscore)
+ * with columns "A" and "B" (this naming is required) which reference 
+ */
+/* CREATE TABLE IF NOT EXISTS public."_EventRegistration" (
+  "A"   UUID  REFERENCES "User" ("id") ON UPDATE CASCADE ON DELETE CASCADE,
+  "B"   UUID  REFERENCES "Event" ("id") ON UPDATE CASCADE
+);
+CREATE UNIQUE INDEX "_EventRegistration_AB_unique" ON "_EventRegistration" ("A" UUID, "B" UUID);
+CREATE INDEX "_EventRegistration_B_index" ON "_" */
+
 CREATE TABLE IF NOT EXISTS public."EventRegistration" (
   "userId"    UUID    REFERENCES "User" ("id") ON UPDATE CASCADE ON DELETE CASCADE,
-  "eventId"   UUID    REFERENCES "User" ("id") ON UPDATE CASCADE,
-  "subscribe" BOOLEAN NOT NULL DEFAULT TRUE,
-  CONSTRAINT "userEventPkey" PRIMARY KEY ("userId", "eventId")
+  "eventId"   UUID    REFERENCES "Event" ("id") ON UPDATE CASCADE,
+  "subscribe" BOOLEAN NOT NULL DEFAULT FALSE,
+  CONSTRAINT "userEventId" PRIMARY KEY ("userId", "eventId")
 );
 
 CREATE TABLE IF NOT EXISTS public."Tournament" (

@@ -1,8 +1,9 @@
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, Role } from '@prisma/client';
 import { InvalidBodyError, FieldAlreadyExistsError, FieldNotFoundError } from '../../errors';
 import { Request } from 'express';
 import { AsyncHandler, respondWithError, logger } from '../../utils';
 import * as HttpStatus from 'http-status-codes';
+import * as argon2 from 'argon2';
 
 const prisma = new PrismaClient();
 
@@ -15,7 +16,7 @@ interface CreateUser extends Request {
     schoolName?: string;
     level?: string;
     mealType?: string;
-    role: 'DELEGATE' | 'SPONSOR' | 'SCL' | 'VOLUNTEER' | 'CONVENTION';
+    role: Role;
     email?: string;
   };
 }
@@ -58,7 +59,6 @@ export const getAllUsers = async () => {
  * POST and GET handler for retrieving user data
  */
 export const getUserHandler: AsyncHandler<GetUser> = async (request, response) => {
-  logger.info('here we are');
   // Check if parsing request.param or by POST body
   if (request.path === '/get') {
     try {
@@ -82,7 +82,6 @@ export const getUserHandler: AsyncHandler<GetUser> = async (request, response) =
   } else {
     try {
       const result = await getUser(request.params.id);
-      logger.info(result);
       if (result) {
         response.json(result);
       }
@@ -111,8 +110,8 @@ export const getUserHandler: AsyncHandler<GetUser> = async (request, response) =
  * @throws InvalidBodyError if a password, first name, or last name is not specified
  */
 export const createUser = async (password: string, firstName: string, lastName: string, grade?: number,
-  schoolName?: string, level?: string, mealType?: string, role: ('DELEGATE' | 'SPONSOR' | 'SCL' | 'VOLUNTEER' | 'CONVENTION') = 'DELEGATE', email?: string) => {
-  prisma.$connect();
+  schoolName?: string, level?: string, role: Role = 'delegate', email?: string) => {
+
   // validate body fields
   if (!password || !firstName || !lastName) {
     throw new InvalidBodyError('Password, first name, or last name was not specified.');
@@ -130,19 +129,25 @@ export const createUser = async (password: string, firstName: string, lastName: 
   const user = await prisma.user.create({
     data: {
       email,
-      password,
+      password: await argon2.hash(password),
       firstName,
       lastName,
       role,
-      school: {
-        create: { name: schoolName }
-      },
       grade,
-      level,
-      mealType
+      latinLevel: level,
+      School: {
+        connectOrCreate: {
+          where: {
+            name: schoolName
+          },
+          create: {
+            name: schoolName
+          }
+        }
+      }
     }
   });
-  prisma.$disconnect();
+
   return user;
 };
 
@@ -151,10 +156,10 @@ export const createUser = async (password: string, firstName: string, lastName: 
  */
 export const createUserHandler: AsyncHandler<CreateUser> = async (request, response) => {
   try {
-    const { password, firstName, lastName, grade, schoolName, level, mealType, role, email } = request.body;
+    const { password, firstName, lastName, grade, schoolName, level, role, email } = request.body;
     // Spread operator unsupported for async/await iterables so we have to extrapolate each body element.
     // See https://github.com/tc39/proposal-async-iteration/issues/103
-    const result = await createUser(password, firstName, lastName, grade, schoolName, level, mealType, role, email);
+    const result = await createUser(password, firstName, lastName, grade, schoolName, level, role, email);
     if (result) {
       response.json(result);
     }
