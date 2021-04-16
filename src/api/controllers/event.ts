@@ -1,26 +1,27 @@
 import { PrismaClient } from '@prisma/client';
 import { FieldNotFoundError, InvalidBodyError } from '../../errors';
 import { Request } from 'express';
-import { AsyncHandler } from '../../utils';
-import { OK } from 'http-status-codes';
+import { AsyncHandler, respondWithError } from '../../utils';
+import StatusCodes from 'http-status-codes';
 
 const prisma = new PrismaClient();
 
-interface CreateEvent extends Request {
+interface CreateEventRequest extends Request {
   body: {
-    title: string;
-    date: Date;
-    location: string;
-    body?: [string];
-    open?: boolean;
-    published?: boolean;
+    name: string,
+    description?: string
+    startTime?: Date,
+    endTime?: Date
+    location?: string,
+    openRegistration: boolean,
+    published: boolean
   };
 }
 
-interface GetEvent extends Request {
+interface GetEventRequest extends Request {
   body: {
     id?: string;
-    title?: string;
+    name?: string;
     date?: Date;
     dateStartRange?: Date;
     dateEndRange?: Date;
@@ -48,26 +49,26 @@ export const getOne = async (id: string) => {
   }
   let event;
   // first try to query event by id
-  if (id) event = prisma.event.findOne({ where: { id } });
+  if (id) event = prisma.event.findUnique({ where: { id } });
   return event;
 };
 
 /**
  * Fetch all events that match query parameters
- * @param {String} title
+ * @param {String} name
  * @param {Date} dateStartRange - the date begin range to include in the search (inclusive)
  * @param {Date} dateEndRange   - the date end range to include in the search (inclusive)
  * @param {String} location
  * @param {Number=10} max
  */
-export const getMany = async (title?: string, dateStartRange?: Date, dateEndRange?: Date, location?: string, max: number = 10) => {
-  if (!title && !dateStartRange && !dateEndRange && !location) {
-    throw new InvalidBodyError('No title, date range, or location was specified.');
+export const getMany = async (name?: string, dateStartRange?: Date, dateEndRange?: Date, location?: string, max: number = 10) => {
+  if (!name && !dateStartRange && !dateEndRange && !location) {
+    throw new InvalidBodyError('No event name, date range, or location was specified.');
   }
   let events;
   events = prisma.event.findMany({
     where: {
-      title: title,
+      name,
       /* date_gte: dateStartRange,
       date_lte: dateEndRange,
       location_contains: location */
@@ -77,14 +78,29 @@ export const getMany = async (title?: string, dateStartRange?: Date, dateEndRang
   else throw new FieldNotFoundError('No results were found.');
 };
 
-export const getEventHandler: AsyncHandler<GetEvent> = async (request, response) => {
+export const getEventHandler: AsyncHandler<GetEventRequest> = async (request, response) => {
   if (request.body.id) {
     const event = await getOne(request.body.id);
-    if (event) response.json(event).status(OK);
+    if (event) response.json(event).status(StatusCodes.OK);
+  } else if (request.params.id) {
+    try {
+      const result = await getOne(request.params.id);
+      if (result) {
+        response.json(result);
+      }
+    } catch (e) {
+      if (e instanceof InvalidBodyError)
+        response.status(StatusCodes.BAD_REQUEST);
+      else if (e instanceof FieldNotFoundError)
+        response.status(StatusCodes.NOT_FOUND);
+      else
+        response.status(StatusCodes.BAD_REQUEST);
+      response.json(respondWithError(e));
+    }
   } else {
-    const { title, dateStartRange, dateEndRange, location, max } = request.body;
-    const event = await getMany(title, dateStartRange, dateEndRange, location, max);
-    if (event) response.json(event).status(OK);
+    const { name, dateStartRange, dateEndRange, location, max } = request.body;
+    const event = await getMany(name, dateStartRange, dateEndRange, location, max);
+    if (event) response.json(event).status(StatusCodes.OK);
   }
 };
 
@@ -95,19 +111,19 @@ export const getEventHandler: AsyncHandler<GetEvent> = async (request, response)
  * @return {Number} the number of users signed up for the event
  */
 export const getMemberCount = async (id: string) => {
-  if(!id) throw new InvalidBodyError('ID not specified.');
-  const memberCount = prisma.event.findOne({ where: { id } }).members.length;
+  if (!id) throw new InvalidBodyError('ID not specified.');
+  const memberCount = (await prisma.event.findUnique({ where: { id } }).EventRegistration()).length;
   return memberCount;
 };
 
 export const getMemberCountHandler: AsyncHandler<GetEventMemberCount> = async (request, response) => {
   const count = await getMemberCount(request.body.id);
-  response.send(count).status(OK);
+  response.send(count).status(StatusCodes.OK);
 };
 
 /**
  * POST handler to create an event from parameters.
- * @param {String} title - the title of the event
+ * @param {String} name - the title of the event
  * @param {Date} date - the datetime of the event
  * @param {String} location - location where the event takes place
  * @param {String} body - description of the event to be displayed by a client
@@ -116,10 +132,21 @@ export const getMemberCountHandler: AsyncHandler<GetEventMemberCount> = async (r
  *
  * @return newly created event object
  */
-export const createEvent = async (title: string, date: Date, location: string, body: [string], open: boolean = false, published: boolean = false) => {
-  
+export const createEvent = async (name: string, description: string, startTime: Date, endTime: Date, location: string, openRegistration: boolean = false, published: boolean = false) => {
+  return await prisma.event.create({
+    data: {
+      name,
+      description,
+      startTime,
+      endTime,
+      location,
+      openRegistration,
+      published
+    }
+  });
 };
 
-export const createEventHandler: AsyncHandler<CreateEvent> = async (request, response) => {
-
+export const createEventHandler: AsyncHandler<CreateEventRequest> = async (request: CreateEventRequest, response) => {
+  const { name, description, startTime, endTime, location, openRegistration, published } = request.body;
+  response.json(await createEvent(name, description, new Date(startTime), new Date(endTime), location, openRegistration, published));
 };

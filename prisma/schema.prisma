@@ -1,0 +1,113 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Event {
+  /// This field's default value can currently not be parsed: `uuid_generate_v4()`.
+  id                String              @id @default(dbgenerated())
+  name              String
+  description       String?
+  startTime         DateTime?
+  endTime           DateTime?
+  location          String?
+  openRegistration  Boolean             @default(false)
+  published         Boolean             @default(false)
+  EventRegistration EventRegistration[]
+  Tournament        Tournament?
+}
+
+model EventRegistration {
+  userId                              String
+  eventId                             String
+  subscribe                           Boolean @default(false)
+  Event                               Event   @relation(fields: [eventId], references: [id])
+  User_EventRegistration_userIdToUser User    @relation("EventRegistration_userIdToUser", fields: [userId], references: [id])
+
+  @@id([userId, eventId])
+}
+
+model School {
+  /// This field's default value can currently not be parsed: `uuid_generate_v4()`.
+  id   String @id @default(dbgenerated())
+  name String @unique
+  User User[]
+}
+
+model Team {
+  /// This field's default value can currently not be parsed: `uuid_generate_v4()`.
+  id             String           @id @default(dbgenerated())
+  name           String           @unique
+  TeamMembership TeamMembership[]
+}
+
+model TeamMembership {
+  userId String
+  teamId String
+  Team   Team   @relation(fields: [teamId], references: [id])
+  User   User   @relation(fields: [userId], references: [id])
+
+  @@id([userId, teamId])
+}
+
+model Tournament {
+  /// This field's default value can currently not be parsed: `uuid_generate_v4()`.
+  id                String              @id @default(dbgenerated())
+  name              String
+  eventId           String?             @unique
+  Event             Event?              @relation(fields: [eventId], references: [id])
+  TournamentEntrant TournamentEntrant[]
+}
+
+model User {
+  /// This field's default value can currently not be parsed: `uuid_generate_v4()`.
+  id                                               String              @id @default(dbgenerated())
+  email                                            String              @unique
+  password                                         String
+  phoneNumber                                      Int?                @unique
+  firstName                                        String
+  lastName                                         String
+  role                                             Role                @default(delegate)
+  schoolId                                         String
+  grade                                            Int?
+  latinLevel                                       String?
+  School                                           School              @relation(fields: [schoolId], references: [id])
+  Announcement                                     Announcement[]
+  EventRegistration_EventRegistration_userIdToUser EventRegistration[] @relation("EventRegistration_userIdToUser")
+  TeamMembership                                   TeamMembership[]
+  TournamentEntrant                                TournamentEntrant[]
+}
+
+model Announcement {
+  /// This field's default value can currently not be parsed: `uuid_generate_v4()`.
+  id          String    @id @default(dbgenerated())
+  authorId    String?
+  title       String
+  body        String?
+  createdOn   DateTime  @default(now())
+  published   Boolean   @default(false)
+  publishDate DateTime?
+  User        User?     @relation(fields: [authorId], references: [id])
+}
+
+model TournamentEntrant {
+  teamId       String
+  tournamentId String
+  User         User       @relation(fields: [teamId], references: [id])
+  Tournament   Tournament @relation(fields: [tournamentId], references: [id])
+
+  @@id([teamId, tournamentId])
+}
+
+enum Role {
+  delegate
+  sponsor
+  scl
+  volunteer
+  convention
+  administrator
+}

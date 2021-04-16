@@ -5,29 +5,42 @@ import del from 'del';
 
 const dir = {
   src: 'src',
-  build: 'build'
+  build: 'dist'
 };
 
-gulp.task('move_vars', () => {
+gulp.task('clean build destination', () => del([ dir.build ]));
+
+gulp.task('source environment files', () => {
   try {
-    return gulp.src('.env')
-    .pipe(gulp.dest('build'));
+    return gulp.src('.env').pipe(gulp.dest(`${dir.build}`));
   } catch (e) {
-    console.error('Please fill out the environment variable file. Copy env stub file to .env and fill out the file.')
+    gulp.src('.template.env').pipe(gulp.dest('.env'));
+    console.error(`Could not find environment file. Copying .template.env to .env - please fill this file out then run again.`);
     return;
   }
 });
 
-gulp.task('clean', () => del([ dir.build ]))
-
-gulp.task('server', () => {
-  let entry = gulp.src(`${dir.src}/index.ts`)
-    .pipe(typescript(require('./tsconfig.json').compilerOptions))
-	.pipe(gulp.dest(`${dir.build}/${dir.src}`));
-  let everything_else = gulp.src('./*(!(node_modules|tests))/**/*.ts')
-    .pipe(typescript(require('./tsconfig.json').compilerOptions))
-    .pipe(gulp.dest(`${dir.build}`));
-  return merge(entry, everything_else);
+gulp.task('source docker environment files', () => {
+  try {
+    return gulp.src('.docker.env').pipe(gulp.dest(`${dir.build}`));
+  } catch (e) {
+    gulp.src('.docker.template.env').pipe(gulp.dest('.docker.env'));
+    console.error(`Could not find Docker environment file (.docker.env). Copying .docker.template.env to .docker.env - please fill this file out then run again.`);
+    return;
+  }
 });
 
-gulp.task('default', gulp.series('clean', 'server', 'move_vars'));
+gulp.task('build server', () => {
+  let entry = gulp.src(`${dir.src}/index.ts`)
+    .pipe(typescript(require('./tsconfig.json').compilerOptions))
+    .pipe(gulp.dest(`${dir.build}/${dir.src}`));
+  let flat_files = gulp.src(`${dir.src}/**/*.json`)
+    .pipe(gulp.dest(`${dir.build}/${dir.src}`));
+  let everything_else = gulp.src('./*(!(node_modules|prod_modules|tests|.git))/**/*.ts')
+    .pipe(typescript(require('./tsconfig.json').compilerOptions))
+    .pipe(gulp.dest(`${dir.build}`));
+  return merge(entry, flat_files, everything_else);
+});
+
+gulp.task('default', gulp.series('clean build destination', 'source environment files', 'build server'));
+gulp.task('docker', gulp.series('source docker environment files', 'build server'))

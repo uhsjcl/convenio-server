@@ -1,5 +1,5 @@
 kind: pipeline
-type: kubernetes
+type: docker
 name: Build and test server
 
 platform:
@@ -8,15 +8,49 @@ platform:
 
 steps:
   - name: install dependencies
-    image: node:lts
+    image: node:lts-alpine
     commands:
       - yarn install
+  
+  - name: lint
+    image: node:lts-alpine
+    commands:
+      - yarn lint
 
   - name: build
-    image: node:lts
+    image: node:lts-alpine
     commands:
       - cp .env.example .env
       - yarn build
+
+---
+kind: pipeline
+type: ssh
+name: Deploy to staging
+
+server:
+  host:
+    from_secret: staging_host
+  user:
+    from_secret: staging_username
+  ssh_key:
+    from_secret: staging_key
+
+trigger:
+  branch:
+    - staging
+
+steps:
+  - name: checkout and pull
+    commands:
+      - git checkout staging
+      - git pull
+
+  - name: deploy
+    commands:
+      - docker-compose down
+      - docker-compose build service
+      - docker-compose up -d
   
 ---
 kind: pipeline
@@ -35,14 +69,13 @@ trigger:
   branch:
     - master
 
-clone:
-  disable: true
-
 steps:
   - name: checkout and pull
     commands:
+      - git checkout master
+      - git pull
   - name: deploy
     commands:
       - docker-compose down
-      - docker-compose build server
+      - docker-compose build service
       - docker-compose up -d
